@@ -6,6 +6,7 @@ bit clk, rst;
 bit signed [DATA_WIDTH-1:0] angle;  // in Radians, 1 sign bit 1 integer bit 6 frac bits
 bit signed [DATA_WIDTH-1:0] cos_val, sin_val;
 
+localparam i_SF = 2.0**-6.0;
 localparam o_SF = 2.0**-6.0;
 
 cordic #(.DATA_WIDTH(DATA_WIDTH)) inst_cordic 
@@ -35,9 +36,9 @@ end
 initial
 begin
     `ifdef FRAC
-        $monitor($time, "from tb angle = %f, cos_val=%f, sin_val=%f",$itor(angle*o_SF),$itor(cos_val*o_SF),$itor(sin_val*o_SF));
+        $monitor($time, "from tb angle = %f, cos_val=%f, sin_val=%f, expected cos=%f, expected sin=%f",$itor(angle*i_SF),$itor(cos_val*o_SF),$itor(sin_val*o_SF), $cos($itor(angle*o_SF)), $sin($itor(angle*o_SF)));
     `else
-        $monitor($time, "from tb angle = %d, cos_val=%d, sin_val=%d",angle, cos_val, sin_val);
+        $monitor($time, "from tb angle = %d, cos_val=%d, sin_val=%d expected cos=%f, expected sin=%f",angle, cos_val, sin_val, $cos(angle), $sin(angle));
 
     `endif
 end
