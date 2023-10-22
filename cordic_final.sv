@@ -96,7 +96,6 @@ generate
                 end
 
 
-                //z[0] <= ext_angle;
                 z[0] <= two_s_compl_angle;
 
                 // Equations as per Cordic Algo spec
@@ -130,7 +129,6 @@ endgenerate
                   //x[i+1] <= x[i] + sigma*2**-i*y[i]  -ve angle
 
 
-                      //z[0] <= ext_angle;
                       z[0] <= two_s_compl_angle; 
 
                       x[i+1] <= (z[i][DATA_WIDTH_TEMP-1] ? (x[i]+ (y[i]>>>i)): (x[i]- (y[i] >>>i )));// shift right for every iteration to divide by 2
@@ -152,7 +150,6 @@ endgenerate
 `endif
 
 
-    //Rounding off logic, Rounding off from 10 bits to 8 bits 
     //Rounding off logic, Rounding off from 12 bits to 8 bits 
     assign cos_fracpart_temp0 = x[MEM_SIZE-1][11:1]+x[MEM_SIZE-1][0];
     assign cos_fracpart_temp0_temp = cos_fracpart_temp0[10:1]+cos_fracpart_temp0[0];
@@ -178,6 +175,7 @@ endgenerate
 
     //preventing 1 clock cycle by assigning as wire
 
+    //negative angle check
     assign cos_val = neg_flag ? (~({x[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], cos_fracpart})+'b1):  {x[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], cos_fracpart};// assigning final value of x as cos(theta)
     assign sin_val = neg_flag ? (~({y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], sin_fracpart})+'b1):  {y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], sin_fracpart} ;// assigning final value of y as sin(theta)
 
