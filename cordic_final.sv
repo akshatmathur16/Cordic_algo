@@ -1,7 +1,7 @@
 // Cordic Algorithm
 // Author: Akshat Mathur
 
-//`define PIPE
+`include "defines.svh"
 module cordic # (parameter DATA_WIDTH=8)
 
 (
@@ -25,6 +25,7 @@ bit signed [DATA_WIDTH_TEMP-1:0] z[MEM_SIZE-1:0]; // variable holding rotated an
 bit signed [DATA_WIDTH_TEMP-1:0] ext_angle;
 bit signed [DATA_WIDTH_TEMP-1:0] two_s_compl_angle; // var to hold if angle is negative
 bit neg_flag;
+bit neg_flag_new[MEM_SIZE-1:0];
 
 //variables for Rounding off 
 bit [10:0] sin_fracpart_temp0, cos_fracpart_temp0;
@@ -145,47 +146,28 @@ endgenerate
 
 `endif
 
-/*
-
-    //Rounding off logic, Rounding off from 12 bits to 8 bits 
-    assign cos_fracpart_temp0 = x[MEM_SIZE-1][11:1]+x[MEM_SIZE-1][0];
-    assign cos_fracpart_temp0_temp = cos_fracpart_temp0[10:1]+cos_fracpart_temp0[0];
-    assign cos_fracpart_temp1 = cos_fracpart_temp0_temp[9:1]+cos_fracpart_temp0_temp[0];
-
-    assign cos_fracpart_temp2 = cos_fracpart_temp1[8:1]+cos_fracpart_temp1[0];
-
-    assign cos_fracpart_temp3 = cos_fracpart_temp2[7:1]+cos_fracpart_temp2[0];
-
-    assign cos_fracpart       = cos_fracpart_temp3[6:1]+cos_fracpart_temp3[0];
-
-    assign sin_fracpart_temp0 = y[MEM_SIZE-1][11:1]+y[MEM_SIZE-1][0];
-    assign sin_fracpart_temp0_temp = sin_fracpart_temp0[10:1]+sin_fracpart_temp0[0];
-    assign sin_fracpart_temp1 = sin_fracpart_temp0_temp[9:1]+sin_fracpart_temp0_temp[0];
-
-    assign sin_fracpart_temp2 = sin_fracpart_temp1[8:1]+sin_fracpart_temp1[0];
-
-    assign sin_fracpart_temp3 = sin_fracpart_temp2[7:1]+sin_fracpart_temp2[0];
-
-    assign sin_fracpart       = sin_fracpart_temp3[6:1]+sin_fracpart_temp3[0];
-
-
-
-    //preventing 1 clock cycle by assigning as wire
-
-    //negative angle check
-    //cos(theta) is +ve in -pi/2 to pi/2
-    assign cos_val = {x[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], cos_fracpart};// assigning final value of x as cos(theta)
-    //AM assign sin_val = neg_flag ? (~({y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], sin_fracpart})+'b1):  {y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], sin_fracpart} ;// assigning final value of y as sin(theta)
-    ////sign mag impl
-    assign sin_val = neg_flag ? {1'b1, y[MEM_SIZE-1][DATA_WIDTH_TEMP-2], sin_fracpart} :{y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], sin_fracpart}; // assigning final value of y as sin(theta)
-
-    */
 
    assign cos_val = x[MEM_SIZE-1][DATA_WIDTH_TEMP-1:6];
-   //assign sin_val = neg_flag ? (~(y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:6])+'b1):y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:6] ;
-   assign sin_val = neg_flag ? {1'b1,y[MEM_SIZE-1][DATA_WIDTH_TEMP-2:6]}:y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:6] ;
+   `ifndef PIPE
+       assign sin_val = neg_flag ? {1'b1,y[MEM_SIZE-1][DATA_WIDTH_TEMP-2:6]}:y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:6] ;
+   `else
+       assign sin_val = neg_flag_new[MEM_SIZE-1] ? {1'b1,y[MEM_SIZE-1][DATA_WIDTH_TEMP-2:6]}:y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:6] ;
+   `endif
 
 
+
+   genvar j;
+
+   generate
+    for(j=0; j< ITER_COUNT; j++)
+    begin
+        always@(posedge clk)
+        begin
+            neg_flag_new[0] <= neg_flag;
+            neg_flag_new[j+1] <= neg_flag_new[j];
+        end
+    end
+   endgenerate
 
 
 

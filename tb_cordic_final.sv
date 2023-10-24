@@ -1,3 +1,4 @@
+`include "defines.svh"
 module tb_cordic_final();
 
 parameter DATA_WIDTH=8;
@@ -22,20 +23,19 @@ initial begin
 
     rst =0;
     `define FRAC
-   // #3; rst =0; angle= 'b00_001110;
-   // #10; rst =0; angle= 'b00_011100;
-   // #10; rst =0; angle= 'b00_111101;
- //   #10; rst =0; angle= 'b01_100000;
- //  #154; rst =0; angle= 'b00_011100;
- //   #154; rst =0; angle= 'b11_100000;
- //   #154; rst =0; angle= 'b01_110101;
-    #3; rst =0; angle= 'b01_100000;
-    #124; rst =0; angle= 'b00_011100;
-    #124; rst =0; angle= 'b11_100000;
-//   #10; rst =0; angle= 'b00_011100;
-//    #10; rst =0; angle= 'b01_110101;
-    //#124; rst =0; angle= 'b00_011100;
-    //#124; rst =0; angle= 'b00_110111;
+
+    `ifndef PIPE
+        #3; rst =0; angle= 'b01_100000;
+        #134; rst =0; angle= 'b00_011100;
+        #134; rst =0; angle= 'b11_100000;
+        #134; rst =0; angle= 'b01_100101;
+        #134; rst =0; angle= 'b01_100000;
+    `else
+        #3; rst =0; angle= 'b01_100000;
+        #10; rst =0; angle= 'b00_011100;
+        #10; rst =0; angle= 'b11_100000;
+    `endif
+    
 
 
 end
