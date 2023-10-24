@@ -1,7 +1,7 @@
 // Cordic Algorithm
 // Author: Akshat Mathur
 
-`define PIPE
+//`define PIPE
 module cordic # (parameter DATA_WIDTH=8)
 
 (
@@ -54,9 +54,11 @@ end
 
 
 assign ext_angle = {angle, 6'b0};
-assign flag =  (ext_angle^ z[0])? 1'b1 : 1'b0;
+//assign flag =  (ext_angle^ z[0])? 1'b1 : 1'b0;
+assign flag =  (two_s_compl_angle^ z[0])? 1'b1 : 1'b0;
 assign neg_flag = ext_angle[DATA_WIDTH_TEMP-1] ? 1'b1: 1'b0;
-assign two_s_compl_angle = neg_flag ? ~ext_angle + 'b1: ext_angle;
+//AM assign two_s_compl_angle = neg_flag ? ~(ext_angle + 'b1): ext_angle;
+assign two_s_compl_angle = neg_flag ? {1'b0, ext_angle[DATA_WIDTH_TEMP-2:0]}: ext_angle; // sign mag implementation
 
 initial
 begin
@@ -66,8 +68,8 @@ begin
 end
 
 genvar i;
-
-`ifndef PIPE // Algo to take care of PIPLINE architecture
+ // Algo to take care of IDLE cycle architecture
+`ifndef PIPE 
 generate
     for(i=0; i< ITER_COUNT-1; i++)
     begin
@@ -101,14 +103,11 @@ generate
                 // Equations as per Cordic Algo spec
     
                 x[i+1] <= (flag_count!='d0 ) ? (z[i][DATA_WIDTH_TEMP-1] ? (x[i]+ (y[i]>>>i)): (x[i]- (y[i] >>>i ))): x[i+1];// shift right for every iteration to divide by 2
-                //AM x[i+1] <= z[i][7] ? (x[i]+ ((2**(~i+1))*y[i])): (x[i]- ((2**(~i+1))*y[i]));// shift right for every iteration to divide by 2
                 //y[i+1] = y[i] + (sigma*2**-i*x[i]); //+ve angle
                 //y[i+1] = y[i] - (sigma*2**-i*x[i]); //+ve angle
                 y[i+1] <= (flag_count!='d0) ? (z[i][DATA_WIDTH_TEMP-1] ? (y[i] - (x[i]>>>i)): (y[i] + (x[i]>>>i))): y[i+1];
-                //AM y[i+1] <= z[i][7] ? (y[i] - ((2**(~i+1))*y[i])): (y[i] + ((2**(~i+1))*y[i]));
 
                 //subtracting tan-1(2**-i) values based on if angle is positive or negative
-                //AM z[i+1] <= (flag_count!='d0 ) ? (z[i][DATA_WIDTH-1] ? z[i] + lut[7*i+:8] : z[i] - lut[7*i+:8]): z[i+1];
                 z[i+1] <= (flag_count!='d0 ) ? (z[i][DATA_WIDTH_TEMP-1] ? z[i] + lut[i] : z[i] - lut[i]): z[i+1];
 
             end
@@ -116,7 +115,7 @@ generate
     end
 endgenerate
 
-`else // Algo to take care of IDLE cycle architecture
+`else// Algo to take care of PIPLINE architecture
 
     generate
       for(i=0; i< ITER_COUNT-1; i++)
@@ -132,14 +131,11 @@ endgenerate
                       z[0] <= two_s_compl_angle; 
 
                       x[i+1] <= (z[i][DATA_WIDTH_TEMP-1] ? (x[i]+ (y[i]>>>i)): (x[i]- (y[i] >>>i )));// shift right for every iteration to divide by 2
-                      //AM x[i+1] <= z[i][7] ? (x[i]+ ((2**(~i+1))*y[i])): (x[i]- ((2**(~i+1))*y[i]));// shift right for every iteration to divide by 2
                       //y[i+1] = y[i] + (sigma*2**-i*x[i]); //+ve angle
                       //y[i+1] = y[i] - (sigma*2**-i*x[i]); //+ve angle
                       y[i+1] <= (z[i][DATA_WIDTH_TEMP-1] ? (y[i] - (x[i]>>>i)): (y[i] + (x[i]>>>i)));
-                      //AM y[i+1] <= z[i][7] ? (y[i] - ((2**(~i+1))*y[i])): (y[i] + ((2**(~i+1))*y[i]));
 
                       //subtracting tan-1(2**-i) values based on if angle is positive or negative
-                          //AM z[i+1] <= (flag_count!='d0 ) ? (z[i][DATA_WIDTH-1] ? z[i] + lut[7*i+:8] : z[i] - lut[7*i+:8]): z[i+1];
                           z[i+1] <= (z[i][DATA_WIDTH_TEMP-1] ? z[i] + lut[i] : z[i] - lut[i]);
 
                       end
@@ -149,6 +145,7 @@ endgenerate
 
 `endif
 
+/*
 
     //Rounding off logic, Rounding off from 12 bits to 8 bits 
     assign cos_fracpart_temp0 = x[MEM_SIZE-1][11:1]+x[MEM_SIZE-1][0];
@@ -176,10 +173,20 @@ endgenerate
     //preventing 1 clock cycle by assigning as wire
 
     //negative angle check
-    //assign cos_val = neg_flag ? (~({x[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], cos_fracpart})+'b1):  {x[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], cos_fracpart};// assigning final value of x as cos(theta)
     //cos(theta) is +ve in -pi/2 to pi/2
     assign cos_val = {x[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], cos_fracpart};// assigning final value of x as cos(theta)
-    assign sin_val = neg_flag ? (~({y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], sin_fracpart})+'b1):  {y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], sin_fracpart} ;// assigning final value of y as sin(theta)
+    //AM assign sin_val = neg_flag ? (~({y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], sin_fracpart})+'b1):  {y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], sin_fracpart} ;// assigning final value of y as sin(theta)
+    ////sign mag impl
+    assign sin_val = neg_flag ? {1'b1, y[MEM_SIZE-1][DATA_WIDTH_TEMP-2], sin_fracpart} :{y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], sin_fracpart}; // assigning final value of y as sin(theta)
+
+    */
+
+   assign cos_val = x[MEM_SIZE-1][DATA_WIDTH_TEMP-1:6];
+   //assign sin_val = neg_flag ? (~(y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:6])+'b1):y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:6] ;
+   assign sin_val = neg_flag ? {1'b1,y[MEM_SIZE-1][DATA_WIDTH_TEMP-2:6]}:y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:6] ;
+
+
+
 
 
 endmodule
