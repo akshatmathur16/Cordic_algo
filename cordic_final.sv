@@ -176,7 +176,9 @@ endgenerate
     //preventing 1 clock cycle by assigning as wire
 
     //negative angle check
-    assign cos_val = neg_flag ? (~({x[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], cos_fracpart})+'b1):  {x[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], cos_fracpart};// assigning final value of x as cos(theta)
+    //assign cos_val = neg_flag ? (~({x[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], cos_fracpart})+'b1):  {x[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], cos_fracpart};// assigning final value of x as cos(theta)
+    //cos(theta) is +ve in -pi/2 to pi/2
+    assign cos_val = {x[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], cos_fracpart};// assigning final value of x as cos(theta)
     assign sin_val = neg_flag ? (~({y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], sin_fracpart})+'b1):  {y[MEM_SIZE-1][DATA_WIDTH_TEMP-1:DATA_WIDTH_TEMP-2], sin_fracpart} ;// assigning final value of y as sin(theta)
 
 
