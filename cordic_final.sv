@@ -137,7 +137,8 @@ genvar i;
         always@(posedge clk)
         begin
             neg_flag_new[0] <= neg_flag;
-            neg_flag_new[j+1] <= neg_flag_new[j];
+            if(j!=11)
+                neg_flag_new[j+1] <= neg_flag_new[j];
         end
     end
    endgenerate
