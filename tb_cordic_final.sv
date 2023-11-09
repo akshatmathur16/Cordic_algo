@@ -6,7 +6,7 @@ module tb_cordic_final();
 parameter DATA_WIDTH=8;
 
 bit clk, rst;
-bit signed [DATA_WIDTH-1:0] angle;  // in Radians, 1 sign bit 1 integer bit 6 frac bits
+bit signed [DATA_WIDTH-1:0] angle;  // in Radians, 1 sign bit 0 integer bit 7 frac bits
 bit signed [DATA_WIDTH-1:0] cos_val, sin_val;
 
 localparam i_SF = 2.0**-6.0;
@@ -47,7 +47,7 @@ initial begin
         #10; rst=0; angle='b11_001110; //-70
         #10; rst=0; angle='b00_001011; //10
         #10; rst=0; angle='b11_100100; //-90
-        #10; rst=0; angle='b00_000000; //-90
+        #10; rst=0; angle='b00_000000; //0
 
     `endif
     
